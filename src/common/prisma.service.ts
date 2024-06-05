@@ -1,4 +1,5 @@
-import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { Logger } from 'winston';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 
@@ -37,16 +38,16 @@ export class PrismaService
   // Buat event listeners untuk logger ketika terjadi 'event'
   onModuleInit() {
     this.$on('info', (e) => {
-      this.logger.log(e);
+      this.logger.info(e);
     });
     this.$on('warn', (e) => {
-      this.logger.log(e);
+      this.logger.info(e);
     });
     this.$on('error', (e) => {
-      this.logger.log(e);
+      this.logger.info(e);
     });
     this.$on('query', (e) => {
-      this.logger.log(e);
+      this.logger.info(e);
     });
   }
 }
