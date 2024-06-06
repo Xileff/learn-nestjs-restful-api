@@ -14,14 +14,14 @@ describe('UserController', () => {
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule, TestModule],
+      imports: [AppModule, TestModule], // Mengambil TestModule
     }).compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
 
     logger = app.get(WINSTON_MODULE_PROVIDER);
-    testService = app.get(TestService);
+    testService = app.get(TestService); // Mengambil TestService dari TestModule
   });
 
   describe('POST /api/users', () => {

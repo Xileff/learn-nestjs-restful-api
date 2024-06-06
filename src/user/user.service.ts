@@ -16,8 +16,10 @@ import { v4 as uuid } from 'uuid';
 @Injectable()
 export class UserService {
   constructor(
+    // Dependency Injection (DI) dari CommonModule yang bersifat @Global
     private validationService: ValidationService,
     private prismaService: PrismaService,
+    // Logger ambil dari NestApplication di main.ts
     @Inject(WINSTON_MODULE_PROVIDER) private logger: Logger,
   ) {}
 

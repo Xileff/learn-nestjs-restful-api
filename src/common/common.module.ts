@@ -9,6 +9,7 @@ import { ErrorFilter } from './error.filter';
 
 @Global()
 @Module({
+  // imports : isinya config logger dan .env
   imports: [
     WinstonModule.forRoot({
       format: winston.format.combine(
@@ -21,6 +22,7 @@ import { ErrorFilter } from './error.filter';
       isGlobal: true,
     }),
   ],
+  // providers : berisi class2 yang ada di folder common
   providers: [
     PrismaService,
     ValidationService,
@@ -29,6 +31,8 @@ import { ErrorFilter } from './error.filter';
       useClass: ErrorFilter,
     },
   ],
+  // exports : menentukan provider apa saja yang boleh diakses global
+  // khusus APP_FILTER : tidak perlu di-export, karena otomatis dibaca oleh AppModule
   exports: [PrismaService, ValidationService],
 })
 export class CommonModule {}
