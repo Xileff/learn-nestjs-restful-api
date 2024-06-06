@@ -4,12 +4,14 @@ import { Logger } from 'winston';
 import { PrismaService } from '../common/prisma.service';
 import { ValidationService } from '../common/validation.service';
 import {
+  LoginUserRequest,
   RegisterUserRequest,
   UserResponse,
   toUserResponse,
 } from '../model/user.model';
 import { UserValidation } from './user.validation';
 import * as bcrypt from 'bcrypt';
+import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class UserService {
@@ -47,5 +49,46 @@ export class UserService {
     });
 
     return toUserResponse(user);
+  }
+
+  async login(request: LoginUserRequest): Promise<UserResponse> {
+    const loginRequest = this.validationService.validate(
+      UserValidation.LOGIN,
+      request,
+    );
+
+    let user = await this.prismaService.user.findUnique({
+      where: {
+        username: loginRequest.username,
+      },
+    });
+
+    if (!user) {
+      throw new HttpException('Invalid username or password', 401);
+    }
+
+    const isPasswordMatch = await bcrypt.compare(
+      loginRequest.password,
+      user.password,
+    );
+
+    if (!isPasswordMatch) {
+      throw new HttpException('Invalid username or password', 401);
+    }
+
+    user = await this.prismaService.user.update({
+      data: {
+        token: uuid(),
+      },
+      where: {
+        username: user.username,
+      },
+    });
+
+    return {
+      username: user.username,
+      name: user.name,
+      token: user.token,
+    };
   }
 }
