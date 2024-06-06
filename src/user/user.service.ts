@@ -125,8 +125,8 @@ export class UserService {
 
     const updatedUser = await this.prismaService.user.update({
       data: {
-        name: updateRequest.name,
-        password: updateRequest.password,
+        name: user.name,
+        password: user.password,
       },
       where: {
         username: user.username,
@@ -134,5 +134,16 @@ export class UserService {
     });
 
     return toUserResponse(updatedUser);
+  }
+
+  async logout(user: User) {
+    await this.prismaService.user.update({
+      data: {
+        token: null,
+      },
+      where: {
+        username: user.username,
+      },
+    });
   }
 }

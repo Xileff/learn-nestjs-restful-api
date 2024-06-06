@@ -192,6 +192,21 @@ describe('UserController', () => {
       expect(response.body.data).toBeDefined();
       expect(response.body.data.username).toBe('test');
       expect(response.body.data.name).toBe('test123');
+
+      const loginResponse = await request(app.getHttpServer())
+        .post('/api/users/login')
+        .send({
+          username: 'test',
+          password: 'test123',
+        });
+
+      logger.info(loginResponse.body);
+
+      expect(loginResponse.status).toBe(200);
+      expect(loginResponse.body.data).toBeDefined();
+      expect(loginResponse.body.data.username).toBe('test');
+      expect(loginResponse.body.data.name).toBe('test123');
+      expect(loginResponse.body.data.token).toBeDefined();
     });
 
     it('should be able to update name only', async () => {
@@ -249,6 +264,41 @@ describe('UserController', () => {
           name: 'test123',
           password: 'test123',
         });
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(401);
+      expect(response.body.errors).toBeDefined();
+    });
+  });
+
+  describe('DELETE /api/users/current', () => {
+    beforeEach(async () => {
+      await testService.createUser();
+    });
+
+    afterEach(async () => {
+      await testService.deleteUser();
+    });
+
+    it('should be able to logout', async () => {
+      const response = await request(app.getHttpServer())
+        .delete('/api/users/current')
+        .set('authorization', 'test');
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toBe(true);
+
+      const user = await testService.getUser();
+      expect(user.token).toBe(null);
+    });
+
+    it('should reject if token is invalid', async () => {
+      const response = await request(app.getHttpServer())
+        .delete('/api/users/current')
+        .set('authorization', 'salah');
 
       logger.info(response.body);
 
