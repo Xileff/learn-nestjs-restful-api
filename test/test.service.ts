@@ -24,4 +24,13 @@ export class TestService {
       },
     });
   }
+
+  async getUser() {
+    const user = await this.prismaService.user.findFirst({
+      where: {
+        token: 'test',
+      },
+    });
+    return user;
+  }
 }

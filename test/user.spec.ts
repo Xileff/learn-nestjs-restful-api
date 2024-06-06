@@ -29,21 +29,6 @@ describe('UserController', () => {
       await testService.deleteUser();
     });
 
-    it('should reject invalid registration', async () => {
-      const response = await request(app.getHttpServer())
-        .post('/api/users')
-        .send({
-          username: '',
-          password: '',
-          name: '',
-        });
-
-      logger.info(response.body);
-
-      expect(response.status).toBe(400);
-      expect(response.body.errors).toBeDefined();
-    });
-
     it('should be able to register', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/users')
@@ -59,6 +44,21 @@ describe('UserController', () => {
       expect(response.body.data).toBeDefined();
       expect(response.body.data.username).toBe('test');
       expect(response.body.data.name).toBe('test');
+    });
+
+    it('should reject invalid registration', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/api/users')
+        .send({
+          username: '',
+          password: '',
+          name: '',
+        });
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(400);
+      expect(response.body.errors).toBeDefined();
     });
 
     it('should reject duplicate username', async () => {
@@ -81,11 +81,8 @@ describe('UserController', () => {
 
   describe('POST /api/users/login', () => {
     beforeEach(async () => {
-      await testService.createUser();
-    });
-
-    afterEach(async () => {
       await testService.deleteUser();
+      await testService.createUser();
     });
 
     it('should be able to login', async () => {
@@ -126,6 +123,37 @@ describe('UserController', () => {
           username: 'test',
           password: 'test123',
         });
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(401);
+      expect(response.body.errors).toBeDefined();
+    });
+  });
+
+  describe('GET /api/users/current', () => {
+    beforeEach(async () => {
+      await testService.deleteUser();
+      await testService.createUser();
+    });
+
+    it('should be able to get current user', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/users/current')
+        .set('authorization', 'test');
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toBeDefined();
+      expect(response.body.data.username).toBe('test');
+      expect(response.body.data.name).toBe('test');
+    });
+
+    it('should reject invalid token', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/users/current')
+        .set('authorization', 'salah token');
 
       logger.info(response.body);
 
