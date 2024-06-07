@@ -16,3 +16,6 @@ export const Auth = createParamDecorator(
     return user;
   },
 );
+// sebenarnya ini cuma jadi perantara antara controller dan service untuk ngebaca req.user
+// kalo di express.js, object request (req) bener2 dikasih controller ke service. sehingga service akan baca semuanya : req.headers, req.body, dan req.user
+// kalo di sini, service cuma dapat req.body dari controller, makanya req.user perlu dibaca dengan decorator
