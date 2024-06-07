@@ -9,6 +9,16 @@ export interface CreateAddressRequest {
   postalCode: string;
 }
 
+export interface UpdateAddressRequest {
+  id: number;
+  contactId: number;
+  street?: string;
+  city?: string;
+  province?: string;
+  country: string;
+  postalCode: string;
+}
+
 export interface GetAddressRequest {
   contactId: number;
   addressId: number;

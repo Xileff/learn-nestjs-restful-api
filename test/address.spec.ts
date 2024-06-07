@@ -212,4 +212,129 @@ describe('AddressController', () => {
       expect(response.body.errors).toBeDefined();
     });
   });
+
+  describe('PUT /api/contacts/:contactId/addresses/:addressId', () => {
+    beforeEach(async () => {
+      await testService.createUser();
+      await testService.createContact();
+      await testService.createAddress();
+    });
+
+    afterEach(async () => {
+      await testService.deleteAddress();
+      await testService.deleteContact();
+      await testService.deleteUser();
+    });
+
+    it('should be able to update address', async () => {
+      const contact = await testService.getContact();
+      const address = await testService.getAddress();
+      const response = await request(app.getHttpServer())
+        .put(`/api/contacts/${contact.id}/addresses/${address.id}`)
+        .set('Authorization', 'test')
+        .send({
+          street: 'test jalan',
+          city: 'test kota',
+          province: 'test provinsi',
+          country: 'test negara',
+          postalCode: '3332221',
+        });
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toBeDefined();
+
+      const updatedAddress = await request(app.getHttpServer())
+        .get(`/api/contacts/${contact.id}/addresses/${address.id}`)
+        .set('Authorization', 'test');
+
+      expect(updatedAddress.body.data.id).toBe(address.id);
+      expect(updatedAddress.body.data.street).toBe('test jalan');
+      expect(updatedAddress.body.data.city).toBe('test kota');
+      expect(updatedAddress.body.data.province).toBe('test provinsi');
+      expect(updatedAddress.body.data.country).toBe('test negara');
+      expect(updatedAddress.body.data.postalCode).toBe('3332221');
+    });
+
+    it('should be able to reject update if request is invalid', async () => {
+      const contact = await testService.getContact();
+      const address = await testService.getAddress();
+      const response = await request(app.getHttpServer())
+        .put(`/api/contacts/${contact.id}/addresses/${address.id}`)
+        .set('Authorization', 'test')
+        .send({
+          street: '',
+          city: '',
+          province: '',
+          country: '',
+          postalCode: '',
+        });
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(400);
+      expect(response.body.errors).toBeDefined();
+    });
+
+    it('should be able to reject update if contact is not found', async () => {
+      const contact = await testService.getContact();
+      const address = await testService.getAddress();
+      const response = await request(app.getHttpServer())
+        .put(`/api/contacts/${contact.id + 1}/addresses/${address.id}`)
+        .set('Authorization', 'test')
+        .send({
+          street: 'test jalan',
+          city: 'test kota',
+          province: 'test provinsi',
+          country: 'test negara',
+          postalCode: '3332221',
+        });
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(404);
+      expect(response.body.errors).toBeDefined();
+    });
+
+    it('should be able to reject update if address is not found', async () => {
+      const contact = await testService.getContact();
+      const address = await testService.getAddress();
+      const response = await request(app.getHttpServer())
+        .put(`/api/contacts/${contact.id}/addresses/${address.id + 1}`)
+        .set('Authorization', 'test')
+        .send({
+          street: 'test jalan',
+          city: 'test kota',
+          province: 'test provinsi',
+          country: 'test negara',
+          postalCode: '3332221',
+        });
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(404);
+      expect(response.body.errors).toBeDefined();
+    });
+
+    it('should be able to reject update if unauthorized', async () => {
+      const contact = await testService.getContact();
+      const address = await testService.getAddress();
+      const response = await request(app.getHttpServer())
+        .put(`/api/contacts/${contact.id}/addresses/${address.id}`)
+        .set('Authorization', 'salah')
+        .send({
+          street: 'test jalan',
+          city: 'test kota',
+          province: 'test provinsi',
+          country: 'test negara',
+          postalCode: '3332221',
+        });
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(401);
+      expect(response.body.errors).toBeDefined();
+    });
+  });
 });

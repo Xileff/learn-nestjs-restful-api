@@ -8,6 +8,7 @@ import {
   AddressResponse,
   CreateAddressRequest,
   GetAddressRequest,
+  UpdateAddressRequest,
   toAddressResponse,
 } from '../model/address.model';
 import { AddressValidation } from './address.validation';
@@ -83,6 +84,44 @@ export class AddressService {
       getRequest.addressId,
       getRequest.contactId,
     );
+
+    return toAddressResponse(address);
+  }
+
+  async update(
+    user: User,
+    request: UpdateAddressRequest,
+  ): Promise<AddressResponse> {
+    this.logger.debug(
+      `AddressService.update(${JSON.stringify(user)}, ${JSON.stringify(request)})`,
+    );
+    const updateRequest = this.validationService.validate(
+      AddressValidation.UPDATE,
+      request,
+    );
+
+    await this.contactService.findContact(
+      user.username,
+      updateRequest.contactId,
+    );
+    let address = await this.findAddress(
+      updateRequest.id,
+      updateRequest.contactId,
+    );
+
+    address = await this.prismaService.address.update({
+      data: {
+        street: updateRequest.street,
+        city: updateRequest.city,
+        province: updateRequest.province,
+        country: updateRequest.country,
+        postal_code: updateRequest.postalCode,
+      },
+      where: {
+        id: updateRequest.id,
+        contact_id: updateRequest.contactId,
+      },
+    });
 
     return toAddressResponse(address);
   }
