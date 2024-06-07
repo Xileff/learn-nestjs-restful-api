@@ -1,9 +1,11 @@
 export class WebResponse<T> {
   data?: T;
   errors?: string;
-  paging?: {
-    currentPage: number;
-    totalPage: number;
-    size: number;
-  };
+  paging?: Paging;
+}
+
+class Paging {
+  currentPage: number;
+  totalPage: number;
+  size: number;
 }

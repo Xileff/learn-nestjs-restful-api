@@ -287,4 +287,136 @@ describe('ContactController', () => {
       expect(response.body.errors).toBeDefined();
     });
   });
+
+  describe('GET /api/contacts', () => {
+    beforeEach(async () => {
+      await testService.createUser();
+      await testService.createContact();
+    });
+
+    afterEach(async () => {
+      await testService.deleteContact();
+      await testService.deleteUser();
+    });
+
+    it('should be able to get all contacts', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/contacts')
+        .set('Authorization', 'test');
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toBeDefined();
+      expect(response.body.data).toHaveLength(1);
+    });
+
+    it('should be able to search by name', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/contacts')
+        .set('Authorization', 'test')
+        .query({
+          name: 'es',
+        });
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toBeDefined();
+      expect(response.body.data).toHaveLength(1);
+    });
+
+    it('should be able to search by name with no result', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/contacts')
+        .set('Authorization', 'test')
+        .query({
+          name: 'unknown',
+        });
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toBeDefined();
+      expect(response.body.data).toHaveLength(0);
+    });
+
+    it('should be able to search by email', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/contacts')
+        .set('Authorization', 'test')
+        .query({
+          email: 'es',
+        });
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toBeDefined();
+      expect(response.body.data).toHaveLength(1);
+    });
+
+    it('should be able to search by email with no result', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/contacts')
+        .set('Authorization', 'test')
+        .query({
+          email: 'unknown',
+        });
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toBeDefined();
+      expect(response.body.data).toHaveLength(0);
+    });
+
+    it('should be able to search by phone', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/contacts')
+        .set('Authorization', 'test')
+        .query({
+          phone: '2223',
+        });
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toBeDefined();
+      expect(response.body.data).toHaveLength(1);
+    });
+
+    it('should be able to search by phone with no result', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/contacts')
+        .set('Authorization', 'test')
+        .query({
+          phone: '12121',
+        });
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toBeDefined();
+      expect(response.body.data).toHaveLength(0);
+    });
+
+    it('should be able to get contacts with page', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/contacts')
+        .set('Authorization', 'test')
+        .query({
+          size: 1,
+          page: 2,
+        });
+      logger.info(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toBeDefined();
+      expect(response.body.data).toHaveLength(0);
+      expect(response.body.paging.size).toBe(1); // per halaman 1
+      expect(response.body.paging.currentPage).toBe(2); // skrg halaman 2
+      expect(response.body.paging.totalPage).toBe(1); // harusnya cuma 1 halaman, karena cuma 1 data
+    });
+  });
 });

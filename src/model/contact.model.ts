@@ -15,6 +15,14 @@ export interface UpdateContactRequest {
   phone?: string;
 }
 
+export interface SearchContactRequest {
+  name?: string;
+  phone?: string;
+  email?: string;
+  page: number;
+  size: number;
+}
+
 export interface ContactResponse {
   id: number;
   firstName: string;
