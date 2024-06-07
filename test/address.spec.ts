@@ -406,4 +406,49 @@ describe('AddressController', () => {
       expect(response.body.errors).toBeDefined();
     });
   });
+
+  describe('GET /api/contacts/:contactId/addresses', () => {
+    beforeEach(async () => {
+      await testService.createUser();
+      await testService.createContact();
+      await testService.createAddress();
+    });
+
+    afterEach(async () => {
+      await testService.deleteAddress();
+      await testService.deleteContact();
+      await testService.deleteUser();
+    });
+
+    it('should be able to list addresses', async () => {
+      const contact = await testService.getContact();
+      const address = await testService.getAddress();
+      const response = await request(app.getHttpServer())
+        .get(`/api/contacts/${contact.id}/addresses`)
+        .set('Authorization', 'test');
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toHaveLength(1);
+      expect(response.body.data[0].id).toBe(address.id);
+      expect(response.body.data[0].street).toBe(address.street);
+      expect(response.body.data[0].city).toBe(address.city);
+      expect(response.body.data[0].province).toBe(address.province);
+      expect(response.body.data[0].country).toBe(address.country);
+      expect(response.body.data[0].postalCode).toBe(address.postal_code);
+    });
+
+    it('should be rejected if contact is not found', async () => {
+      const contact = await testService.getContact();
+      const response = await request(app.getHttpServer())
+        .get(`/api/contacts/${contact.id + 1}/addresses`)
+        .set('Authorization', 'test');
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(404);
+      expect(response.body.errors).toBeDefined();
+    });
+  });
 });
