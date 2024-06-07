@@ -13,6 +13,9 @@ export class AuthMiddleware implements NestMiddleware {
         where: {
           token,
         },
+        // select: {
+        //   username: true,
+        // },
       });
 
       if (user) {

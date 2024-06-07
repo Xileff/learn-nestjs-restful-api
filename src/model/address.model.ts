@@ -9,6 +9,11 @@ export interface CreateAddressRequest {
   postalCode: string;
 }
 
+export interface GetAddressRequest {
+  contactId: number;
+  addressId: number;
+}
+
 export interface AddressResponse {
   id: number;
   street?: string;
