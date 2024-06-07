@@ -7,7 +7,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { TestService } from './test.service';
 import { TestModule } from './test.module';
 
-describe('UserController', () => {
+describe('ContactController', () => {
   let app: INestApplication;
   let logger: Logger;
   let testService: TestService;
@@ -83,6 +83,59 @@ describe('UserController', () => {
           email: 'felix@example.com',
           phone: '111122223333',
         });
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(401);
+      expect(response.body.errors).toBeDefined();
+    });
+  });
+
+  describe('GET /api/contacts/:contactId', () => {
+    beforeEach(async () => {
+      await testService.createUser();
+      await testService.createContact();
+    });
+
+    afterEach(async () => {
+      await testService.deleteContact();
+      await testService.deleteUser();
+    });
+
+    it('should be able to get contact', async () => {
+      const existingContact = await testService.getContact();
+      const response = await request(app.getHttpServer())
+        .get(`/api/contacts/${existingContact.id}`)
+        .set('authorization', 'test');
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toBeDefined();
+      expect(response.body.data.id).toBe(existingContact.id);
+      expect(response.body.data.firstName).toBe(existingContact.first_name);
+      expect(response.body.data.lastName).toBe(existingContact.last_name);
+      expect(response.body.data.email).toBe(existingContact.email);
+      expect(response.body.data.phone).toBe(existingContact.phone);
+    });
+
+    it('should reject get contact if id is invalid', async () => {
+      const existingContact = await testService.getContact();
+      const response = await request(app.getHttpServer())
+        .get(`/api/contacts/${existingContact.id + 1}`)
+        .set('authorization', 'test');
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(404);
+      expect(response.body.errors).toBeDefined();
+    });
+
+    it('should reject get contact if unauthorized', async () => {
+      const existingContact = await testService.getContact();
+      const response = await request(app.getHttpServer())
+        .get(`/api/contacts/${existingContact.id}`)
+        .set('authorization', 'salah');
 
       logger.info(response.body);
 

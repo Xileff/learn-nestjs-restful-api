@@ -41,4 +41,26 @@ export class TestService {
       },
     });
   }
+
+  async createContact() {
+    await this.prismaService.contact.create({
+      data: {
+        first_name: 'test',
+        last_name: 'test',
+        email: 'test@example.com',
+        phone: '111122223333',
+        username: 'test',
+      },
+    });
+  }
+
+  async getContact() {
+    const contact = await this.prismaService.contact.findFirst({
+      where: {
+        username: 'test',
+      },
+    });
+
+    return contact;
+  }
 }
