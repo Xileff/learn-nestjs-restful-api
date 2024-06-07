@@ -337,4 +337,73 @@ describe('AddressController', () => {
       expect(response.body.errors).toBeDefined();
     });
   });
+
+  describe('DELETE /api/contacts/:contactId/addresses/:addressId', () => {
+    beforeEach(async () => {
+      await testService.createUser();
+      await testService.createContact();
+      await testService.createAddress();
+    });
+
+    afterEach(async () => {
+      await testService.deleteAddress();
+      await testService.deleteContact();
+      await testService.deleteUser();
+    });
+
+    it('should be able to remove address', async () => {
+      const contact = await testService.getContact();
+      const address = await testService.getAddress();
+      const response = await request(app.getHttpServer())
+        .delete(`/api/contacts/${contact.id}/addresses/${address.id}`)
+        .set('Authorization', 'test');
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toBe(true);
+
+      const deletedAddress = await testService.getAddress();
+      expect(deletedAddress).toBeNull();
+    });
+
+    it('should be rejected if contact is not found', async () => {
+      const contact = await testService.getContact();
+      const address = await testService.getAddress();
+      const response = await request(app.getHttpServer())
+        .delete(`/api/contacts/${contact.id + 1}/addresses/${address.id}`)
+        .set('Authorization', 'test');
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(404);
+      expect(response.body.errors).toBeDefined();
+    });
+
+    it('should be rejected if address is not found', async () => {
+      const contact = await testService.getContact();
+      const address = await testService.getAddress();
+      const response = await request(app.getHttpServer())
+        .delete(`/api/contacts/${contact.id}/addresses/${address.id + 1}`)
+        .set('Authorization', 'test');
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(404);
+      expect(response.body.errors).toBeDefined();
+    });
+
+    it('should be rejected if unauthorized', async () => {
+      const contact = await testService.getContact();
+      const address = await testService.getAddress();
+      const response = await request(app.getHttpServer())
+        .delete(`/api/contacts/${contact.id}/addresses/${address.id}`)
+        .set('Authorization', 'salah');
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(401);
+      expect(response.body.errors).toBeDefined();
+    });
+  });
 });

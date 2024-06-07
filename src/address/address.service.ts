@@ -8,6 +8,7 @@ import {
   AddressResponse,
   CreateAddressRequest,
   GetAddressRequest,
+  RemoveAddressRequest,
   UpdateAddressRequest,
   toAddressResponse,
 } from '../model/address.model';
@@ -120,6 +121,37 @@ export class AddressService {
       where: {
         id: updateRequest.id,
         contact_id: updateRequest.contactId,
+      },
+    });
+
+    return toAddressResponse(address);
+  }
+
+  async remove(
+    user: User,
+    request: RemoveAddressRequest,
+  ): Promise<AddressResponse> {
+    this.logger.debug(
+      `AddressService.remove(${JSON.stringify(user)}, ${JSON.stringify(request)})`,
+    );
+    const deleteRequest = this.validationService.validate(
+      AddressValidation.DELETE,
+      request,
+    );
+
+    await this.contactService.findContact(
+      user.username,
+      deleteRequest.contactId,
+    );
+    let address = await this.findAddress(
+      deleteRequest.addressId,
+      deleteRequest.contactId,
+    );
+
+    address = await this.prismaService.address.delete({
+      where: {
+        id: deleteRequest.addressId,
+        contact_id: deleteRequest.contactId,
       },
     });
 

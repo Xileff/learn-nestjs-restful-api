@@ -24,6 +24,11 @@ export interface GetAddressRequest {
   addressId: number;
 }
 
+export interface RemoveAddressRequest {
+  contactId: number;
+  addressId: number;
+}
+
 export interface AddressResponse {
   id: number;
   street?: string;

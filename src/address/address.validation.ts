@@ -24,4 +24,9 @@ export class AddressValidation {
     country: z.string().min(1).max(100),
     postalCode: z.string().min(1).max(10),
   });
+
+  static readonly DELETE = z.object({
+    contactId: z.number().positive().min(1),
+    addressId: z.number().positive().min(1),
+  });
 }
