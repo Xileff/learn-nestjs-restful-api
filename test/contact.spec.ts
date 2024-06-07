@@ -232,4 +232,59 @@ describe('ContactController', () => {
       expect(response.body.errors).toBeDefined();
     });
   });
+
+  describe('DELETE /api/contacts/:contactId', () => {
+    beforeEach(async () => {
+      await testService.createUser();
+      await testService.createContact();
+    });
+
+    afterEach(async () => {
+      await testService.deleteContact();
+      await testService.deleteUser();
+    });
+
+    it('should be able to delete contact', async () => {
+      const existingContact = await testService.getContact();
+      const response = await request(app.getHttpServer())
+        .delete(`/api/contacts/${existingContact.id}`)
+        .set('Authorization', 'test');
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toBe(true);
+
+      const checkContactResponse = await request(app.getHttpServer())
+        .get(`/api/contacts/${existingContact.id}`)
+        .set('Authorization', 'test');
+
+      expect(checkContactResponse.status).toBe(404);
+      expect(checkContactResponse.body.errors).toBeDefined();
+    });
+
+    it('should be reject delete contact if not found', async () => {
+      const existingContact = await testService.getContact();
+      const response = await request(app.getHttpServer())
+        .delete(`/api/contacts/${existingContact.id + 1}`)
+        .set('Authorization', 'test');
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(404);
+      expect(response.body.errors).toBeDefined();
+    });
+
+    it('should be reject delete contact if unauthorized', async () => {
+      const existingContact = await testService.getContact();
+      const response = await request(app.getHttpServer())
+        .delete(`/api/contacts/${existingContact.id}`)
+        .set('Authorization', 'salah');
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(401);
+      expect(response.body.errors).toBeDefined();
+    });
+  });
 });

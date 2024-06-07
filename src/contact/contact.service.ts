@@ -61,6 +61,7 @@ export class ContactService {
   }
 
   async get(user: User, contactId: number): Promise<ContactResponse> {
+    this.logger.debug(`ContactService.get(${user}, ${contactId})`);
     const contact = await this.findContact(user.username, contactId);
     return toContactResponse(contact);
   }
@@ -69,7 +70,7 @@ export class ContactService {
     user: User,
     request: UpdateContactRequest,
   ): Promise<ContactResponse> {
-    console.log('Masuk ke service');
+    this.logger.debug(`ContactService.update(${user}, ${request})`);
     const updateRequest = this.validationService.validate(
       ContactValidation.UPDATE,
       request,
@@ -93,6 +94,18 @@ export class ContactService {
       },
     });
 
+    return toContactResponse(contact);
+  }
+
+  async remove(user: User, contactId: number): Promise<ContactResponse> {
+    this.logger.debug(`ContactService.remove(${contactId})`);
+    let contact = await this.findContact(user.username, contactId);
+    contact = await this.prismaService.contact.delete({
+      where: {
+        id: contact.id,
+        username: contact.username,
+      },
+    });
     return toContactResponse(contact);
   }
 }
