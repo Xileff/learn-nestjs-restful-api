@@ -121,12 +121,14 @@ export class UserService {
 
     if (updateRequest.password) {
       user.password = await bcrypt.hash(updateRequest.password, 10);
+      user.token = null;
     }
 
     const updatedUser = await this.prismaService.user.update({
       data: {
         name: user.name,
         password: user.password,
+        token: user.token,
       },
       where: {
         username: user.username,
