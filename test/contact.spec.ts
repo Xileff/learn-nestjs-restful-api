@@ -143,4 +143,93 @@ describe('ContactController', () => {
       expect(response.body.errors).toBeDefined();
     });
   });
+
+  describe('PUT /api/contacts/:contactId', () => {
+    beforeEach(async () => {
+      await testService.createUser();
+      await testService.createContact();
+    });
+
+    afterEach(async () => {
+      await testService.deleteContact();
+      await testService.deleteUser();
+    });
+
+    it('should be able to update contact', async () => {
+      const existingContact = await testService.getContact();
+      const response = await request(app.getHttpServer())
+        .put(`/api/contacts/${existingContact.id}`)
+        .set('authorization', 'test')
+        .send({
+          firstName: 'updated',
+          lastName: 'updated',
+          email: 'updated@example.com',
+          phone: '111122223333',
+        });
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toBeDefined();
+      expect(response.body.data.id).toBe(existingContact.id);
+      expect(response.body.data.firstName).toBe('updated');
+      expect(response.body.data.lastName).toBe('updated');
+      expect(response.body.data.email).toBe('updated@example.com');
+      expect(response.body.data.phone).toBe('111122223333');
+    });
+
+    it('should reject update contact if not found', async () => {
+      const existingContact = await testService.getContact();
+      const response = await request(app.getHttpServer())
+        .put(`/api/contacts/${existingContact.id + 1}`)
+        .set('authorization', 'test')
+        .send({
+          firstName: 'updated',
+          lastName: 'updated',
+          email: 'updated@example.com',
+          phone: '111122223333',
+        });
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(404);
+      expect(response.body.errors).toBeDefined();
+    });
+
+    it('should reject update contact if request is invalid', async () => {
+      const existingContact = await testService.getContact();
+      const response = await request(app.getHttpServer())
+        .put(`/api/contacts/${existingContact.id}`)
+        .set('authorization', 'test')
+        .send({
+          firstName: '',
+          lastName: '',
+          email: '',
+          phone: '',
+        });
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(400);
+      expect(response.body.errors).toBeDefined();
+    });
+
+    it('should reject update contact if unauthorized', async () => {
+      const existingContact = await testService.getContact();
+      const response = await request(app.getHttpServer())
+        .put(`/api/contacts/${existingContact.id}`)
+        .set('authorization', 'salah')
+        .send({
+          firstName: 'updated',
+          lastName: 'updated',
+          email: 'updated@example.com',
+          phone: '111122223333',
+        });
+
+      logger.info(response.body);
+
+      expect(response.status).toBe(401);
+      expect(response.body.errors).toBeDefined();
+    });
+  });
 });

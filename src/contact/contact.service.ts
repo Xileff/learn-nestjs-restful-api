@@ -1,11 +1,12 @@
 import { HttpException, Inject, Injectable } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { Contact, User } from '@prisma/client';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PrismaService } from '../common/prisma.service';
 import { ValidationService } from '../common/validation.service';
 import {
   ContactResponse,
   CreateContactRequest,
+  UpdateContactRequest,
   toContactResponse,
 } from '../model/contact.model';
 import { Logger } from 'winston';
@@ -44,17 +45,53 @@ export class ContactService {
     return toContactResponse(contact);
   }
 
-  async get(user: User, contactId: number): Promise<ContactResponse> {
+  async findContact(username: string, id: number): Promise<Contact> {
     const contact = await this.prismaService.contact.findFirst({
       where: {
-        id: contactId,
-        username: user.username,
+        id,
+        username,
       },
     });
 
     if (!contact) {
       throw new HttpException('Contact not found.', 404);
     }
+
+    return contact;
+  }
+
+  async get(user: User, contactId: number): Promise<ContactResponse> {
+    const contact = await this.findContact(user.username, contactId);
+    return toContactResponse(contact);
+  }
+
+  async update(
+    user: User,
+    request: UpdateContactRequest,
+  ): Promise<ContactResponse> {
+    console.log('Masuk ke service');
+    const updateRequest = this.validationService.validate(
+      ContactValidation.UPDATE,
+      request,
+    );
+
+    let contact = await this.findContact(user.username, updateRequest.id);
+
+    console.info('Contact found : ');
+    console.info(contact);
+
+    contact = await this.prismaService.contact.update({
+      data: {
+        first_name: updateRequest.firstName,
+        last_name: updateRequest.lastName,
+        email: updateRequest.email,
+        phone: updateRequest.phone,
+      },
+      where: {
+        id: contact.id,
+        username: contact.username,
+      },
+    });
 
     return toContactResponse(contact);
   }
