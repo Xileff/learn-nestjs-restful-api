@@ -13,6 +13,7 @@ import { AuthMiddleware } from './auth.middleware';
   // imports : isinya config logger dan .env
   imports: [
     WinstonModule.forRoot({
+      level: 'debug',
       format: winston.format.combine(
         winston.format.json(),
         winston.format.prettyPrint({ colorize: true }),
